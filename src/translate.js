@@ -32,6 +32,9 @@ function main(params) {
    * The default language to choose in case of an error
    */
   const defaultLanguage = 'en';
+  var translation;
+  var word_count;
+  var character_count;
 
   return new Promise(function (resolve, reject) {
 
@@ -49,21 +52,40 @@ function main(params) {
       // found in the catch clause below
 
       // pick the language with the highest confidence, and send it back
-      
-      languageTranslator.translate(params)
+
+      const LanguageTranslatorV3 = require('ibm-watson/language-translator/v3');
+      const { IamAuthenticator } = require('ibm-watson/auth');
+
+      const languageTranslator = new LanguageTranslatorV3({
+        version: '2020-11-19',
+        authenticator: new IamAuthenticator({
+          apikey: 'm-QirLnBImNUjgparLCOo2U88-Rvg8ya32idHqjVf4i-',
+        }),
+        serviceUrl: 'https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/6f5707d3-22ff-448f-a042-7f5bc19d87a8',
+      });
+
+      const translateParams = {
+        text: 'hallo das ist mein Text',
+        modelId: 'en-de',
+      };
+
+      languageTranslator.translate(translateParams)
         .then(translationResult => {
           console.log(JSON.stringify(translationResult, null, 2));
+          translation = translationResult.translations[0].translation;
+          word_count = translationResult.word_count;
+          character_count =  translationResult.character_count;
+          console.log(translation);
         })
-        .catch(err => {
+          .catch(err => {
           console.log('error:', err);
         });
-
       resolve({
         statusCode: 200,
         body: {
-          translations: languageTranslator.translationResult.translations.translation,
-          words: languageTranslator.translationResult.word_count,
-          characters: languageTranslator.translationResult.character_count,
+          translations: translation,
+          words: word_count,
+          characters: character_count,
         },
         headers: { 'Content-Type': 'application/json' }
       });

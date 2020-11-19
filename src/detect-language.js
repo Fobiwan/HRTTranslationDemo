@@ -27,14 +27,13 @@ function getTheErrorResponse(errorMessage, defaultLanguage) {
   *
   */
 function main(params) {
-
   /*
    * The default language to choose in case of an error
    */
   const defaultLanguage = 'en';
-  const bestLanguage;
-  const identifiedLanguages;
-  const confidence;
+  var bestLanguage;
+  var identifiedLanguages;
+  var confidence;
 
   return new Promise(function (resolve, reject) {
 
@@ -53,33 +52,37 @@ function main(params) {
       const { IamAuthenticator } = require('ibm-watson/auth');
 
       const languageTranslator = new LanguageTranslatorV3({
-        version: '3',
+        version: '2020-11-19',
         authenticator: new IamAuthenticator({
           apikey: 'm-QirLnBImNUjgparLCOo2U88-Rvg8ya32idHqjVf4i-',
         }),
         serviceUrl: 'https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/6f5707d3-22ff-448f-a042-7f5bc19d87a8',
       });
 
+      const identifyParams = {
+        text: 'Language translator translates text from one language to another'
+      };
       
-      languageTranslator.identify(params.text)
+      languageTranslator.identify(identifyParams)
         .then(identifiedLanguages => {
           console.log(JSON.stringify(identifiedLanguages, null, 2));
+          idendifiedLanguages.forEach(language => {
+            if(language.confidence >= 0.3) {
+              bestLanguage = language;
+              confidence = language.confidence
+            }
+          });
+  
         })
         .catch(err => {
           console.log('error:', err);
         });
 
-        idendifiedLanguages.forEach(language => {
-          if(language.confidence >= 0.9) {
-            bestLanguage = language;
-            confidence = language.confidence
-          }
-        });
 
       resolve({
         statusCode: 200,
         body: {
-          text: params.text, 
+          text: identifyParams.text, 
           language: bestLanguage,
           confidence: confidence,
         },
