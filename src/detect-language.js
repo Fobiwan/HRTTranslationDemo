@@ -32,6 +32,9 @@ function main(params) {
    * The default language to choose in case of an error
    */
   const defaultLanguage = 'en';
+  const bestLanguage;
+  const identifiedLanguages;
+  const confidence;
 
   return new Promise(function (resolve, reject) {
 
@@ -46,13 +49,39 @@ function main(params) {
 
       // in case of errors during the call resolve with an error message according to the pattern 
       // found in the catch clause below
+      const LanguageTranslatorV3 = require('ibm-watson/language-translator/v3');
+      const { IamAuthenticator } = require('ibm-watson/auth');
+
+      const languageTranslator = new LanguageTranslatorV3({
+        version: '3',
+        authenticator: new IamAuthenticator({
+          apikey: 'm-QirLnBImNUjgparLCOo2U88-Rvg8ya32idHqjVf4i-',
+        }),
+        serviceUrl: 'https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/6f5707d3-22ff-448f-a042-7f5bc19d87a8',
+      });
+
+      
+      languageTranslator.identify(params.text)
+        .then(identifiedLanguages => {
+          console.log(JSON.stringify(identifiedLanguages, null, 2));
+        })
+        .catch(err => {
+          console.log('error:', err);
+        });
+
+        idendifiedLanguages.forEach(language => {
+          if(language.confidence >= 0.9) {
+            bestLanguage = language;
+            confidence = language.confidence
+          }
+        });
 
       resolve({
         statusCode: 200,
         body: {
           text: params.text, 
-          language: "<Best Language>",
-          confidence: 0.5,
+          language: bestLanguage,
+          confidence: confidence,
         },
         headers: { 'Content-Type': 'application/json' }
       });

@@ -49,12 +49,21 @@ function main(params) {
       // found in the catch clause below
 
       // pick the language with the highest confidence, and send it back
+      
+      languageTranslator.translate(params)
+        .then(translationResult => {
+          console.log(JSON.stringify(translationResult, null, 2));
+        })
+        .catch(err => {
+          console.log('error:', err);
+        });
+
       resolve({
         statusCode: 200,
         body: {
-          translations: "<translated text>",
-          words: 1,
-          characters: 11,
+          translations: languageTranslator.translationResult.translations.translation,
+          words: languageTranslator.translationResult.word_count,
+          characters: languageTranslator.translationResult.character_count,
         },
         headers: { 'Content-Type': 'application/json' }
       });
