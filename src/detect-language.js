@@ -32,7 +32,6 @@ function main(params) {
    */
   const defaultLanguage = 'en';
   var bestLanguage;
-  var identifiedLanguages;
   var confidence;
 
   return new Promise(function (resolve, reject) {
@@ -60,39 +59,35 @@ function main(params) {
       });
 
       const identifyParams = {
-        text: 'Language translator translates text from one language to another'
+        text: params.text
       };
-      
+
+      console.log("hallo hier: " + identifyParams.text);
       languageTranslator.identify(identifyParams)
         .then(identifiedLanguages => {
-          console.log(JSON.stringify(identifiedLanguages, null, 2));
-          idendifiedLanguages.forEach(language => {
-            if(language.confidence >= 0.3) {
-              bestLanguage = language;
-              confidence = language.confidence
-            }
-          });
-  
+              //console.log(JSON.stringify(identifiedLanguages, null, 2));
+              bestLanguage = identifiedLanguages.result.languages[0].language;
+              confidence = identifiedLanguages.result.languages[0].confidence;
+              resolve({
+                statusCode: 200,
+                body: {
+                  text: identifyParams.text, 
+                  language: bestLanguage,
+                  confidence: confidence,
+                },
+                headers: { 'Content-Type': 'application/json' }
+              });
         })
         .catch(err => {
           console.log('error:', err);
         });
 
 
-      resolve({
-        statusCode: 200,
-        body: {
-          text: identifyParams.text, 
-          language: bestLanguage,
-          confidence: confidence,
-        },
-        headers: { 'Content-Type': 'application/json' }
-      });
-
 
     } catch (err) {
-      console.error('Error while initializing the AI service', err);
-      resolve(getTheErrorResponse('Error while communicating with the language service', defaultLanguage));
+      console.error('Error while initializing the AI service detect', err);
+      resolve(getTheErrorResponse('Error while communicating with the language service detect', defaultLanguage));
     }
+
   });
 }

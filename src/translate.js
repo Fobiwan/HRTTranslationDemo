@@ -64,31 +64,34 @@ function main(params) {
         serviceUrl: 'https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/6f5707d3-22ff-448f-a042-7f5bc19d87a8',
       });
 
+      console.log("text")
       const translateParams = {
-        text: 'hallo das ist mein Text',
-        modelId: 'en-de',
+        text: params.body.text,
+        modelId: params.body.language+"-en",
       };
 
+      console.log("TEXT HIER: " +params.body.text);
       languageTranslator.translate(translateParams)
         .then(translationResult => {
-          console.log(JSON.stringify(translationResult, null, 2));
-          translation = translationResult.translations[0].translation;
-          word_count = translationResult.word_count;
-          character_count =  translationResult.character_count;
-          console.log(translation);
+          //console.log(JSON.stringify(translationResult, null, 2));
+          translation = translationResult.result.translations[0].translation;
+          word_count = translationResult.result.word_count;
+          character_count =  translationResult.result.character_count;
+
+          resolve({
+            statusCode: 200,
+            body: {
+              translations: translation,
+              words: word_count,
+              characters: character_count,
+            },
+            headers: { 'Content-Type': 'application/json' }
+          });
         })
           .catch(err => {
           console.log('error:', err);
         });
-      resolve({
-        statusCode: 200,
-        body: {
-          translations: translation,
-          words: word_count,
-          characters: character_count,
-        },
-        headers: { 'Content-Type': 'application/json' }
-      });
+
          
     } catch (err) {
       console.error('Error while initializing the AI service', err);
